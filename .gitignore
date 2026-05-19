@@ -1,0 +1,6 @@
+.deploy-photomorning/
+.wrangler/
+photomorning-site.zip
+.cloudflare-account-id.txt
+released/
+node_modules/
