@@ -481,6 +481,15 @@ function renderLatestStory(article, index) {
           </article>`;
 }
 
+function shuffled(items) {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+}
+
 async function updateLatestFeed(articles) {
   const latestArticles = articles.slice(0, 4);
   if (!latestArticles.length) return 0;
@@ -499,6 +508,27 @@ async function updateLatestFeed(articles) {
 
   await fs.writeFile(indexPath, html, "utf8");
   return latestArticles.length;
+}
+
+async function updateFeaturedGuides() {
+  const articles = JSON.parse(await fs.readFile(path.join(root, "articles.json"), "utf8"));
+  const selectedArticles = shuffled(articles).slice(0, 5);
+  const indexPath = path.join(root, "index.html");
+  let html = await fs.readFile(indexPath, "utf8");
+  const links = selectedArticles
+    .map((article) => `            <a href="articles/${article.slug}.html">${escapeHtml(article.title)}</a>`)
+    .join("\n");
+  const section = `<section class="guide-list">
+            <div class="section-heading compact">
+              <h2>Featured Guides</h2>
+              <a href="/">More Guides ></a>
+            </div>
+${links}
+          </section>`;
+
+  html = html.replace(/<section class="guide-list">\s*<div class="section-heading compact">\s*<h2>Featured Guides<\/h2>[\s\S]*?<\/section>/, section);
+  await fs.writeFile(indexPath, html, "utf8");
+  return selectedArticles.length;
 }
 
 function rootImagePathFromArticleSrc(src) {
@@ -1005,13 +1035,14 @@ async function main() {
   const localImageResult = await convertLocalImageAssets();
   const refreshedReleaseImages = await refreshPublishedReleaseImages();
   const latestFeedItems = await updateLatestFeed(refreshedReleaseImages.articles);
+  const featuredGuideItems = await updateFeaturedGuides();
   const normalizedHomeLinks = await normalizeHomeLinks();
   const seoPages = await applySeoMetadata();
   const sitemapUrls = await writeSearchIndexFiles();
   await rebuildDeployDir();
   await createZip();
   const clearedReleasedItems = await clearReleasedDirectory();
-  console.log(`Built PhotoMorning with asset version ${version}. Released articles synced: ${releasedResult.newArticles.length}. Published released articles: ${refreshedReleaseImages.articles.length}. Release thumbnails refreshed: ${refreshedReleaseImages.updated}. Latest feed items: ${latestFeedItems}. Home links normalized: ${normalizedHomeLinks}. SEO pages updated: ${seoPages}. Sitemap URLs: ${sitemapUrls}. Released items cleared: ${clearedReleasedItems}. External images localized: ${imageResult.localized}. Local images converted to AVIF: ${localImageResult.converted}. Failed: ${imageResult.failed}.`);
+  console.log(`Built PhotoMorning with asset version ${version}. Released articles synced: ${releasedResult.newArticles.length}. Published released articles: ${refreshedReleaseImages.articles.length}. Release thumbnails refreshed: ${refreshedReleaseImages.updated}. Latest feed items: ${latestFeedItems}. Featured guide items: ${featuredGuideItems}. Home links normalized: ${normalizedHomeLinks}. SEO pages updated: ${seoPages}. Sitemap URLs: ${sitemapUrls}. Released items cleared: ${clearedReleasedItems}. External images localized: ${imageResult.localized}. Local images converted to AVIF: ${localImageResult.converted}. Failed: ${imageResult.failed}.`);
 }
 
 main().catch((error) => {
