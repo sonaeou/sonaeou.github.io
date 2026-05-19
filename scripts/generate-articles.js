@@ -163,7 +163,7 @@ function renderArticle(article, index) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${article.title} - PhotoMorning</title>
-    <link rel="stylesheet" href="../styles.css?v=202605190437" />
+    <link rel="stylesheet" href="../styles.css?v=202605190515" />
   </head>
   <body>
 ${siteNav}
@@ -204,7 +204,7 @@ ${siteNav}
       </aside>
     </main>
 ${footer}
-    <script src="../script.js?v=202605190437"></script>
+    <script src="../script.js?v=202605190515"></script>
   </body>
 </html>
 `;
