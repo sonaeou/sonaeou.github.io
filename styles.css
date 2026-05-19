@@ -902,7 +902,9 @@ figcaption {
   }
 
   .brand-row {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
     min-height: 56px;
+    gap: 10px;
   }
 
   .icon-button {
@@ -946,7 +948,7 @@ figcaption {
   }
 
   .brand-row {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
   }
 
   .brand {
@@ -955,7 +957,6 @@ figcaption {
   }
 
   .header-actions {
-    grid-column: auto;
     width: auto;
     justify-content: flex-end;
   }
@@ -1006,8 +1007,38 @@ figcaption {
 }
 
 @media (max-width: 420px) {
+  .brand-row {
+    width: min(100% - 12px, 1180px);
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    gap: 6px;
+    min-height: 54px;
+  }
+
   .brand {
-    font-size: 24px;
+    font-size: clamp(18px, 5.2vw, 22px);
+    line-height: 0.95;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .brand small {
+    font-size: 6px;
+    letter-spacing: 0;
+  }
+
+  .header-actions {
+    gap: 4px;
+  }
+
+  .header-actions button {
+    min-height: 36px;
+    padding: 0 9px;
+    font-size: 11px;
+  }
+
+  .icon-button {
+    width: 38px;
+    height: 38px;
   }
 
   .mobile-nav.open {
