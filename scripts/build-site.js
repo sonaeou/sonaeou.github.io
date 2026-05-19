@@ -832,7 +832,7 @@ async function copyRecursive(source, destination) {
 async function rebuildDeployDir() {
   await fs.rm(deployDir, { recursive: true, force: true });
   await fs.mkdir(deployDir, { recursive: true });
-  const files = ["index.html", "about.html", "contact.html", "advertise.html", "privacy-policy.html", "styles.css", "script.js", "articles.json", "sitemap.xml", "robots.txt", "_headers", "_redirects"];
+  const files = ["index.html", "about.html", "contact.html", "advertise.html", "privacy-policy.html", "styles.css", "script.js", "articles.json", "sitemap.xml", "robots.txt", "CNAME", "_headers", "_redirects"];
   await Promise.all(files.map((file) => fs.copyFile(path.join(root, file), path.join(deployDir, file))));
   await copyRecursive(path.join(root, "articles"), path.join(deployDir, "articles"));
   if (await pathExists(path.join(root, "assets"))) {
@@ -846,7 +846,7 @@ async function createZip() {
   await execFileAsync("powershell", [
     "-NoProfile",
     "-Command",
-    "$items=@('index.html','about.html','contact.html','advertise.html','privacy-policy.html','styles.css','script.js','articles','articles.json','assets','sitemap.xml','robots.txt','_headers','_redirects'); Compress-Archive -Path $items -DestinationPath photomorning-site.zip -Force",
+    "$items=@('index.html','about.html','contact.html','advertise.html','privacy-policy.html','styles.css','script.js','articles','articles.json','assets','sitemap.xml','robots.txt','CNAME','_headers','_redirects'); Compress-Archive -Path $items -DestinationPath photomorning-site.zip -Force",
   ], { cwd: root });
 }
 
