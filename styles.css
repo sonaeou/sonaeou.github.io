@@ -482,7 +482,8 @@ textarea {
 
 .member-box,
 .newsletter-box,
-.guide-list {
+.guide-list,
+.ad-card {
   background: var(--surface);
   border: 1px solid var(--line);
   padding: 20px;
@@ -507,6 +508,91 @@ textarea {
 .member-box a {
   display: inline-flex;
   align-items: center;
+}
+
+.ad-card {
+  display: grid;
+  gap: 10px;
+  border-top: 6px solid #1d7f5f;
+}
+
+.ad-card span {
+  width: fit-content;
+  border: 1px solid var(--line);
+  padding: 3px 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.ad-card h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  line-height: 1.05;
+}
+
+.ad-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.ad-card a {
+  display: inline-flex;
+  width: fit-content;
+  border: 2px solid var(--ink);
+  padding: 9px 12px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.redirect-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.redirect-card {
+  max-width: 520px;
+  border: 1px solid var(--line);
+  border-top: 6px solid #1d7f5f;
+  padding: 28px;
+  background: var(--surface);
+}
+
+.redirect-card span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.redirect-card h1 {
+  margin: 10px 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.redirect-card p {
+  color: var(--muted);
+}
+
+.redirect-card a {
+  display: inline-flex;
+  border: 2px solid var(--ink);
+  padding: 10px 13px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .guide-list {

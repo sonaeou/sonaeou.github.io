@@ -55,6 +55,13 @@ const footer = `
       <p>PhotoMorning is an independent photography publication. Contact: <a href="mailto:hello@photomorning.com">hello@photomorning.com</a></p>
     </footer>`;
 
+const adoramaAd = `<section class="ad-card adorama-ad" aria-label="Sponsored Adorama offer">
+          <span>Sponsored</span>
+          <h2>Upgrade Your Camera Kit at Adorama</h2>
+          <p>Shop cameras, lenses, lighting, audio gear, and creator tools from one of the most trusted names in photo retail.</p>
+          <a href="/go/adorama.html" target="_blank" rel="sponsored nofollow noopener">Shop Adorama</a>
+        </section>`;
+
 const imageSets = [
   [
     ["https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1400&q=80", "Cinema camera lens on a production rig"],
@@ -163,7 +170,7 @@ function renderArticle(article, index) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${article.title} - PhotoMorning</title>
-    <link rel="stylesheet" href="../styles.css?v=202605190749" />
+    <link rel="stylesheet" href="../styles.css?v=202605231037" />
   </head>
   <body>
 ${siteNav}
@@ -195,6 +202,7 @@ ${siteNav}
           <p>Access the site without ads and support independent photography journalism.</p>
           <a href="../advertise.html">Subscribe Now</a>
         </section>
+        ${adoramaAd}
         <section class="guide-list">
           <div class="section-heading compact">
             <h2>Related</h2>
@@ -204,7 +212,7 @@ ${siteNav}
       </aside>
     </main>
 ${footer}
-    <script src="../script.js?v=202605190749"></script>
+    <script src="../script.js?v=202605231037"></script>
   </body>
 </html>
 `;

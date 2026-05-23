@@ -19,6 +19,8 @@ const siteName = "PhotoMorning";
 const siteDescription = "Independent photography news, camera reviews, creator stories, and field-tested gear advice.";
 const googleSiteVerification = "4Hqqsy7ItyGyNyJIT3POidbxpAlq0PVnpeLptvxI2ZA";
 const fallbackImage = "assets/images/photo-1516035069371-29a1b244cc32-11830d4223.avif";
+const adoramaAffiliateUrl = "https://adorama.prf.hn/click/camref:1011l5JsLr";
+const adoramaJumpPath = "go/adorama.html";
 
 function formatVersion(date) {
   const pad = (value) => String(value).padStart(2, "0");
@@ -98,6 +100,19 @@ function jsonScript(data) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
+function renderAdoramaAd() {
+  return `<section class="ad-card adorama-ad" aria-label="Sponsored Adorama offer">
+          <span>Sponsored</span>
+          <h2>Upgrade Your Camera Kit at Adorama</h2>
+          <p>Shop cameras, lenses, lighting, audio gear, and creator tools from one of the most trusted names in photo retail.</p>
+          <a href="/${adoramaJumpPath}" target="_blank" rel="sponsored nofollow noopener">Shop Adorama</a>
+        </section>`;
+}
+
+function removeAdoramaAds(html) {
+  return html.replace(/\n\s*<section class="ad-card adorama-ad"[\s\S]*?<\/section>\s*/g, "\n");
+}
+
 async function pathExists(target) {
   try {
     await fs.access(target);
@@ -118,11 +133,18 @@ function getSharp() {
 }
 
 async function updateAssetVersions() {
-  for (const file of rootPages) {
-    const fullPath = path.join(root, file);
+  const articlePages = (await pathExists(articleDir))
+    ? (await fs.readdir(articleDir)).filter((file) => file.endsWith(".html")).map((file) => path.join(articleDir, file))
+    : [];
+  const htmlPages = [
+    ...rootPages.map((file) => path.join(root, file)),
+    ...articlePages,
+  ];
+
+  for (const fullPath of htmlPages) {
     let html = await fs.readFile(fullPath, "utf8");
-    html = html.replace(/href="styles\.css(?:\?v=\d+)?"/g, `href="styles.css?v=${version}"`);
-    html = html.replace(/src="script\.js(?:\?v=\d+)?"/g, `src="script.js?v=${version}"`);
+    html = html.replace(/href="((?:\.\.\/)?styles\.css)(?:\?v=\d+)?"/g, `href="$1?v=${version}"`);
+    html = html.replace(/src="((?:\.\.\/)?script\.js)(?:\?v=\d+)?"/g, `src="$1?v=${version}"`);
     await fs.writeFile(fullPath, html, "utf8");
   }
 
@@ -306,6 +328,7 @@ function renderReleasedArticle(article) {
           <p>Access the site without ads and support independent photography journalism.</p>
           <a href="../advertise.html">Subscribe Now</a>
         </section>
+        ${renderAdoramaAd()}
       </aside>
     </main>
 
@@ -423,6 +446,59 @@ async function updateArticleRelatedLists() {
 
     await fs.writeFile(filePath, html, "utf8");
   }
+}
+
+async function writeAdoramaJumpPage() {
+  const goDir = path.join(root, "go");
+  await fs.mkdir(goDir, { recursive: true });
+  const html = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Continue to Adorama - PhotoMorning</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <meta http-equiv="refresh" content="0; url=${adoramaAffiliateUrl}" />
+    <link rel="stylesheet" href="../styles.css?v=${version}" />
+    <script>
+      window.location.replace(${JSON.stringify(adoramaAffiliateUrl)});
+    </script>
+  </head>
+  <body>
+    <main class="redirect-page">
+      <section class="redirect-card">
+        <span>Sponsored</span>
+        <h1>Continuing to Adorama</h1>
+        <p>You are being sent to Adorama, a PhotoMorning affiliate partner for cameras, lenses, lighting, and creator gear.</p>
+        <a href="${adoramaAffiliateUrl}" rel="sponsored nofollow">Continue to Adorama</a>
+      </section>
+    </main>
+  </body>
+</html>
+`;
+  await fs.writeFile(path.join(goDir, "adorama.html"), html, "utf8");
+}
+
+async function insertAdoramaAds() {
+  const indexPath = path.join(root, "index.html");
+  let indexHtml = removeAdoramaAds(await fs.readFile(indexPath, "utf8"));
+  indexHtml = indexHtml.replace(/(<aside class="sidebar"[^>]*>[\s\S]*?<\/section>)/, `$1\n\n          ${renderAdoramaAd()}\n\n          `);
+  indexHtml = indexHtml.replace(/\n\s*<section class="guide-list"/g, '\n          <section class="guide-list"');
+  await fs.writeFile(indexPath, indexHtml, "utf8");
+
+  const articleFiles = (await fs.readdir(articleDir))
+    .filter((file) => file.endsWith(".html"))
+    .map((file) => path.join(articleDir, file));
+
+  for (const filePath of articleFiles) {
+    let html = removeAdoramaAds(await fs.readFile(filePath, "utf8"));
+    html = html.replace(/(<aside class="article-sidebar"[^>]*>[\s\S]*?<\/section>)/, `$1\n        ${renderAdoramaAd()}\n        `);
+    html = html.replace(/\n\s*<section class="guide-list"/g, '\n        <section class="guide-list"');
+    await fs.writeFile(filePath, html, "utf8");
+  }
+
+  return articleFiles.length + 1;
 }
 
 async function updateReleasedSection(releasedArticles) {
@@ -865,6 +941,9 @@ async function rebuildDeployDir() {
   const files = ["index.html", "about.html", "contact.html", "advertise.html", "privacy-policy.html", "styles.css", "script.js", "articles.json", "sitemap.xml", "robots.txt", "CNAME", "_headers", "_redirects"];
   await Promise.all(files.map((file) => fs.copyFile(path.join(root, file), path.join(deployDir, file))));
   await copyRecursive(path.join(root, "articles"), path.join(deployDir, "articles"));
+  if (await pathExists(path.join(root, "go"))) {
+    await copyRecursive(path.join(root, "go"), path.join(deployDir, "go"));
+  }
   if (await pathExists(path.join(root, "assets"))) {
     await copyRecursive(path.join(root, "assets"), path.join(deployDir, "assets"));
   }
@@ -876,7 +955,7 @@ async function createZip() {
   await execFileAsync("powershell", [
     "-NoProfile",
     "-Command",
-    "$items=@('index.html','about.html','contact.html','advertise.html','privacy-policy.html','styles.css','script.js','articles','articles.json','assets','sitemap.xml','robots.txt','CNAME','_headers','_redirects'); Compress-Archive -Path $items -DestinationPath photomorning-site.zip -Force",
+    "$items=@('index.html','about.html','contact.html','advertise.html','privacy-policy.html','styles.css','script.js','articles','go','articles.json','assets','sitemap.xml','robots.txt','CNAME','_headers','_redirects'); Compress-Archive -Path $items -DestinationPath photomorning-site.zip -Force",
   ], { cwd: root });
 }
 
@@ -1028,9 +1107,11 @@ async function localizeExternalImages() {
 
 async function main() {
   await updateAssetVersions();
+  await writeAdoramaJumpPage();
   await generateBaseArticles();
   const releasedResult = await syncReleasedArticles();
   await updateArticleRelatedLists();
+  const adPages = await insertAdoramaAds();
   const imageResult = await localizeExternalImages();
   const localImageResult = await convertLocalImageAssets();
   const refreshedReleaseImages = await refreshPublishedReleaseImages();
@@ -1042,7 +1123,7 @@ async function main() {
   await rebuildDeployDir();
   await createZip();
   const clearedReleasedItems = await clearReleasedDirectory();
-  console.log(`Built PhotoMorning with asset version ${version}. Released articles synced: ${releasedResult.newArticles.length}. Published released articles: ${refreshedReleaseImages.articles.length}. Release thumbnails refreshed: ${refreshedReleaseImages.updated}. Latest feed items: ${latestFeedItems}. Featured guide items: ${featuredGuideItems}. Home links normalized: ${normalizedHomeLinks}. SEO pages updated: ${seoPages}. Sitemap URLs: ${sitemapUrls}. Released items cleared: ${clearedReleasedItems}. External images localized: ${imageResult.localized}. Local images converted to AVIF: ${localImageResult.converted}. Failed: ${imageResult.failed}.`);
+  console.log(`Built PhotoMorning with asset version ${version}. Released articles synced: ${releasedResult.newArticles.length}. Published released articles: ${refreshedReleaseImages.articles.length}. Adorama ad pages updated: ${adPages}. Release thumbnails refreshed: ${refreshedReleaseImages.updated}. Latest feed items: ${latestFeedItems}. Featured guide items: ${featuredGuideItems}. Home links normalized: ${normalizedHomeLinks}. SEO pages updated: ${seoPages}. Sitemap URLs: ${sitemapUrls}. Released items cleared: ${clearedReleasedItems}. External images localized: ${imageResult.localized}. Local images converted to AVIF: ${localImageResult.converted}. Failed: ${imageResult.failed}.`);
 }
 
 main().catch((error) => {
